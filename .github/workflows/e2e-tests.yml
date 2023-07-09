@@ -22,9 +22,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      # Build and start the "express-app" and "react-app" services.
+      # Build and start the "express-app" and "react-app" containers in detached mode to avoid blocking the workflow.
       - name: Start local environment with Docker Compose
-        run: docker compose up -d --build
+        run: docker compose up -d
 
       # Build the Docker image for E2E tests.
       - name: Build E2E Docker image
@@ -62,4 +62,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: E2E Test Report
-          path: e2e-report
+          path: e2e/e2e-report
