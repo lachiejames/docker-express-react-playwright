@@ -12,6 +12,6 @@
       "strict": true,
       "useUnknownInCatchVariables": false
   },
-  "include": ["src/**/*.ts", "code-review-leaderboard.config.js"],
-  "exclude": ["src/**/*.spec.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"]
 }
