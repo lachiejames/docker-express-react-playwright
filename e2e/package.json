@@ -1,0 +1,14 @@
+{
+  "name": "e2e-tests",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "e2etest": "playwright test ./src",
+    "e2etest:ci": "CI=true yarn e2etest"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.35.1",
+    "eslint-plugin-playwright": "0.11.2",
+    "typescript": "4.9.5"
+  }
+}
