@@ -16,8 +16,5 @@ COPY . .
 # Compiles the application.
 RUN yarn build
 
-# Exposes port 3000 from the container to the Docker host. This is the port that our react app will run on.
-EXPOSE 3000
-
 # Specifies the command to start the React app using 'yarn start', which starts a development server with features such as live reloading, suitable for the testing environment.
 CMD ["yarn", "start"]

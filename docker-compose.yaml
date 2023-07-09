@@ -13,9 +13,6 @@ services:
     # Maps port 5000 of the container to port 5000 on the host machine.
     ports:
       - 5000:5000
-    # Informs Docker that the express-app container will listen on the specified network ports at runtime. Here it's port 5000.
-    expose:
-      - 5000
 
   # Defines the second service, react-app.
   react-app:
@@ -27,6 +24,3 @@ services:
     # Maps port 3000 of the container to port 3000 on the host machine.
     ports:
       - 3000:3000
-    # Informs Docker that the react-app container will listen on the specified network ports at runtime. Here it's port 3000.
-    expose:
-      - 3000

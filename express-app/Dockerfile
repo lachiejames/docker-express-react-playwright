@@ -16,8 +16,5 @@ COPY . .
 # Compiles the application.
 RUN yarn build
 
-# Exposes port 5000 from the container to the Docker host. This is the port that our express app will run on.
-EXPOSE 5000
-
 # Specifies the command to start the express app. We're running the built application using Node.js directly instead of using Yarn or Nodemon to avoid issues with signal handling.
 CMD ["node", "dist/index.js"]
