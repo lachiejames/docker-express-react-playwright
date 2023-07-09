@@ -1,0 +1,11 @@
+# Ignore everything
+**
+
+# Allow these folders in image
+!src/**
+
+# Allow these files in image
+!.env
+!package.json
+!tsconfig.json
+!yarn.lock

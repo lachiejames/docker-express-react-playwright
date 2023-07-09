@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+  express-app:
+    container_name: express-app
+    build:
+      context: ./express-app
+    ports:
+      - 5000:5000
+    expose:
+      - 5000
+
+  react-app:
+    container_name: react-app
+    build:
+      context: ./react-app
+    ports:
+      - 3000:3000
+    expose:
+      - 3000
