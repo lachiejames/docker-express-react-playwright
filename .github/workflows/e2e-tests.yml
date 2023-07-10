@@ -41,7 +41,7 @@ jobs:
       - name: Register pre-E2E container memory usage
         run: |
           for CONTAINER in "${CONTAINERS_TO_MEM_CHECK[@]}"; do
-            MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER)
+            MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER | awk '{print $1}')
             echo "Pre-E2E memory usage for $CONTAINER: $MEMORY_USAGE"
 
             # Store the initial memory usage of each container as an environment variable.
@@ -55,7 +55,7 @@ jobs:
       - name: Register post-E2E container memory usage
         run: |
           for CONTAINER in "${CONTAINERS_TO_MEM_CHECK[@]}"; do
-            MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER)
+            MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER | awk '{print $1}')
             echo "Post-E2E memory usage for $CONTAINER: $MEMORY_USAGE"
 
             # Store the final memory usage of each container as an environment variable.
