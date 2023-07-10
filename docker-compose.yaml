@@ -3,24 +3,24 @@ version: "3"
 
 # Describes the services to be created.
 services:
-  # Defines the first service, express-app.
-  express-app:
+  # Defines the first service, express_app.
+  express_app:
     # Sets a custom container name. This is useful for easy identification of running containers.
-    container_name: express-app
+    container_name: express_app
     # Specifies the build context directory and Dockerfile location.
     build:
-      context: ./express-app
+      context: ./express_app
     # Maps port 5000 of the container to port 5000 on the host machine.
     ports:
       - 5000:5000
 
-  # Defines the second service, react-app.
-  react-app:
+  # Defines the second service, react_app.
+  react_app:
     # Sets a custom container name.
-    container_name: react-app
+    container_name: react_app
     # Specifies the build context directory and Dockerfile location.
     build:
-      context: ./react-app
+      context: ./react_app
     # Maps port 3000 of the container to port 3000 on the host machine.
     ports:
       - 3000:3000
