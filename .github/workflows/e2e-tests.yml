@@ -9,6 +9,10 @@ on:
   # Allow running the workflow manually from the GitHub Actions tab.
   workflow_dispatch:
 
+# Set your container names here
+env:
+  CONTAINERS: "express-app react-app"
+
 # Define the jobs in this workflow.
 jobs:
   e2e-tests:
@@ -30,24 +34,18 @@ jobs:
       - name: Build E2E Docker image
         run: docker build -t playwright-tests ./e2e
 
-      - name: Prepare for memory leak check
-        run: |
-          # Install ts-node so that we can run the checkForMemoryLeaks script.
-          npm install -g ts-node
-
-          # Store the names of all running containers as a space-separated string, which will each be checked for memory leaks.
-          CONTAINER_NAMES=($(docker ps --format '{{.Names}}'))
-          echo "CONTAINER_NAMES=$CONTAINER_NAMES" >> $GITHUB_ENV
+      - name: Install ts-node
+        run: npm install -g ts-node
 
       - name: Register pre-E2E container memory usage
         id: initial_memory_usage
         run: |
-          for CONTAINER_NAME in "${CONTAINER_NAMES[@]}"; do
-            MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER_NAME)
-            echo "Pre-E2E memory usage for $CONTAINER_NAME: $MEMORY_USAGE"
+          for CONTAINER in ${{ env.CONTAINERS }}; do
+            MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER)
+            echo "Pre-E2E memory usage for $CONTAINER: $MEMORY_USAGE"
 
             # Store the initial memory usage of each container as an output variable.
-            echo "::set-output name=${CONTAINER_NAME}::$MEMORY_USAGE"
+            echo "::set-output name=${CONTAINER}::$MEMORY_USAGE"
           done
 
       # Execute the E2E tests
@@ -57,22 +55,22 @@ jobs:
       - name: Register post-E2E container memory usage
         id: final_memory_usage
         run: |
-          for CONTAINER_NAME in "${CONTAINER_NAMES[@]}"; do
-            MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER_NAME)
-            echo "Post-E2E memory usage for $CONTAINER_NAME: $MEMORY_USAGE"
+          for CONTAINER in ${{ env.CONTAINERS }}; do
+            MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER)
+            echo "Post-E2E memory usage for $CONTAINER: $MEMORY_USAGE"
 
             # Store the final memory usage of each container as an output variable.
-            echo "::set-output name=${CONTAINER_NAME}::$MEMORY_USAGE"
+            echo "::set-output name=${CONTAINER}::$MEMORY_USAGE"
           done
 
       - name: Check for memory leaks
         run: |
-          for CONTAINER_NAME in "${CONTAINER_NAMES[@]}"; do
-            INITIAL_MEM_USAGE="${{ steps.initial_memory_usage.outputs.${CONTAINER_NAME} }}"
-            FINAL_MEM_USAGE="${{ steps.final_memory_usage.outputs.${CONTAINER_NAME} }}"
+          for CONTAINER in ${{ env.CONTAINERS }}; do
+            INITIAL_MEM_USAGE="${{ steps.initial_memory_usage.outputs[$CONTAINER] }}"
+            FINAL_MEM_USAGE="${{ steps.final_memory_usage.outputs[$CONTAINER] }}"
 
             # Use the checkForMemoryLeaks script to check for memory leaks in each container.
-            ts-node ./scripts/checkForMemoryLeaks.ts $CONTAINER_NAME ${!INITIAL_MEM_USAGE} ${!FINAL_MEM_USAGE}
+            ts-node ./scripts/checkForMemoryLeaks.ts $CONTAINER $INITIAL_MEM_USAGE $FINAL_MEM_USAGE
           done
 
       # Prepare the logs for all containers.
@@ -83,9 +81,9 @@ jobs:
           mkdir -p logs
 
           # Export each Docker container's logs to files in the "logs" directory.
-          docker logs express-app >& logs/express-app.log
-          docker logs react-app >& logs/react-app.log
-          docker logs playwright-tests >& logs/playwright-tests.log
+          for CONTAINER in ${{ env.CONTAINERS }}; do
+            docker logs $CONTAINER >& logs/$CONTAINER.log
+          done
 
       # Upload the logs for all containers as an artifact.
       - name: Upload container logs
