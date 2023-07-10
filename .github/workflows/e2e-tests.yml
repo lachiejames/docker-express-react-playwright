@@ -11,7 +11,8 @@ on:
 
 # Set your container names here
 env:
-  CONTAINERS: "express-app react-app"
+  CONTAINERS_TO_MEM_CHECK: "express-app react-app"
+  CONTAINERS_TO_LOG: "express-app react-app playwright-tests"
 
 # Define the jobs in this workflow.
 jobs:
@@ -40,7 +41,7 @@ jobs:
       - name: Register pre-E2E container memory usage
         id: initial_memory_usage
         run: |
-          for CONTAINER in ${{ env.CONTAINERS }}; do
+          for CONTAINER in ${{ env.CONTAINERS_TO_MEM_CHECK }}; do
             MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER)
             echo "Pre-E2E memory usage for $CONTAINER: $MEMORY_USAGE"
 
@@ -55,7 +56,7 @@ jobs:
       - name: Register post-E2E container memory usage
         id: final_memory_usage
         run: |
-          for CONTAINER in ${{ env.CONTAINERS }}; do
+          for CONTAINER in ${{ env.CONTAINERS_TO_MEM_CHECK }}; do
             MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER)
             echo "Post-E2E memory usage for $CONTAINER: $MEMORY_USAGE"
 
@@ -65,7 +66,7 @@ jobs:
 
       - name: Check for memory leaks
         run: |
-          for CONTAINER in ${{ env.CONTAINERS }}; do
+          for CONTAINER in ${{ env.CONTAINERS_TO_MEM_CHECK }}; do
             INITIAL_MEM_USAGE="${{ steps.initial_memory_usage.outputs[$CONTAINER] }}"
             FINAL_MEM_USAGE="${{ steps.final_memory_usage.outputs[$CONTAINER] }}"
 
@@ -81,7 +82,7 @@ jobs:
           mkdir -p logs
 
           # Export each Docker container's logs to files in the "logs" directory.
-          for CONTAINER in ${{ env.CONTAINERS }}; do
+          for CONTAINER in ${{ env.CONTAINERS_TO_LOG }}; do
             docker logs $CONTAINER >& logs/$CONTAINER.log
           done
 
