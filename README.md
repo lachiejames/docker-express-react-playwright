@@ -43,4 +43,4 @@ docker run --name playwright-tests --network=host playwright-tests yarn e2etest:
 
 ## Further Reading
 
-For a detailed guide on how this setup works and how to integrate it into your own projects, check my blog post [Elevate Your CI/CD: Dockerized E2E Tests with GitHub Actions](https://lachiejames.com/elevate-your-ci-cd-dockerized-e2e-tests-with-github-actions/?preview_id=2048&preview_nonce=3477eacf8a&preview=true&_thumbnail_id=2072). The post explains each step of the process and provides additional context and explanation.
+For a detailed guide on how this setup works and how to integrate it into your own projects, check my blog post [Elevate Your CI/CD: Dockerized E2E Tests with GitHub Actions](https://lachiejames.com/elevate-your-ci-cd-dockerized-e2e-tests-with-github-actions/). The post explains each step of the process and provides additional context and explanation.
