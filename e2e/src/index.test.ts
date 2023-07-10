@@ -7,4 +7,6 @@ test('should display "Hello, World!" text on page', async ({ page }) => {
   await page.goto("/");
   // Wait for the text "Learn React" to appear on the page.
   await page.locator("text=Learn React").waitFor();
+
+  await page.goto("localhost:5000");
 });
