@@ -6,7 +6,7 @@ services:
   # Defines the first service, express-app.
   express-app:
     # Sets a custom container name. This is useful for easy identification of running containers.
-    container_name: express_app
+    container_name: express-app
     # Specifies the build context directory and Dockerfile location.
     build:
       context: ./express-app
@@ -17,7 +17,7 @@ services:
   # Defines the second service, react-app.
   react-app:
     # Sets a custom container name.
-    container_name: react_app
+    container_name: react-app
     # Specifies the build context directory and Dockerfile location.
     build:
       context: ./react-app
