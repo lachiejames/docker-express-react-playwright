@@ -32,13 +32,13 @@ docker compose up
 To build the end-to-end tests image:
 
 ```bash
-docker build -t playwright_tests ./e2e
+docker build -t playwright-tests ./e2e
 ```
 
 To run the end-to-end tests:
 
 ```bash
-docker run --name playwright_tests --network=host playwright_tests yarn e2etest:ci
+docker run --name playwright-tests --network=host playwright-tests yarn e2etest:ci
 ```
 
 ## Further Reading
