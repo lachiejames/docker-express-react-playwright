@@ -34,7 +34,7 @@ jobs:
         run: |
           declare -A initial_mem_usage
 
-          for container in express-app react-app; do
+          for container in backend frontend; do
             mem_usage=$(docker stats --no-stream --format "{{.MemUsage}}" $container)
             initial_mem_usage[$container]=$(echo $mem_usage | awk '{print $1}')
           done
@@ -49,7 +49,7 @@ jobs:
           declare -A final_mem_usage
           increased_mem_containers=""
 
-          for container in express-app react-app; do
+          for container in backend frontend; do
             mem_usage=$(docker stats --no-stream --format "{{.MemUsage}}" $container)
             final_mem_usage[$container]=$(echo $mem_usage | awk '{print $1}')
 
