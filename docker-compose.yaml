@@ -9,7 +9,7 @@ services:
     container_name: express_app
     # Specifies the build context directory and Dockerfile location.
     build:
-      context: ./express_app
+      context: ./express-app
     # Maps port 5000 of the container to port 5000 on the host machine.
     ports:
       - 5000:5000
@@ -20,7 +20,7 @@ services:
     container_name: react_app
     # Specifies the build context directory and Dockerfile location.
     build:
-      context: ./react_app
+      context: ./react-app
     # Maps port 3000 of the container to port 3000 on the host machine.
     ports:
       - 3000:3000
