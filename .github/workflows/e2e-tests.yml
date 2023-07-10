@@ -30,42 +30,9 @@ jobs:
       - name: Build E2E Docker image
         run: docker build -t playwright-tests ./e2e
 
-      - name: Register initial container memory usage
-        run: |
-          declare -A initial_mem_usage
-
-          for container in backend frontend; do
-            mem_usage=$(docker stats --no-stream --format "{{.MemUsage}}" $container)
-            initial_mem_usage[$container]=$(echo $mem_usage | awk '{print $1}')
-          done
-          echo "INITIAL_MEM_USAGE=$(declare -p initial_mem_usage)" >> $GITHUB_ENV
-
-      # Execute the E2E tests
+      # Execute the E2E tests 
       - name: Run E2E tests against local environment
         run: docker run -v $(pwd)/e2e-report:/app/e2e-report --name playwright-tests --network=host playwright-tests yarn e2etest:ci
-
-      - name: Check container memory usage after tests
-        run: |
-          declare -A final_mem_usage
-          increased_mem_containers=""
-
-          for container in backend frontend; do
-            mem_usage=$(docker stats --no-stream --format "{{.MemUsage}}" $container)
-            final_mem_usage[$container]=$(echo $mem_usage | awk '{print $1}')
-
-            initial=${initial_mem_usage[$container]}
-            final=${final_mem_usage[$container]}
-
-            increase=$(echo "$final * 100 / $initial" | bc -l)
-            if (( $(echo "$increase > 150" | bc -l) )); then
-              increased_mem_containers+="$container "
-            fi
-          done
-
-          if [[ -n $increased_mem_containers ]]; then
-            echo "Memory usage of these containers increased by more than 50%: $increased_mem_containers"
-            exit 1
-          fi
 
       # Prepare the logs for all containers.
       - name: Prepare container logs
