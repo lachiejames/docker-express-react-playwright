@@ -30,42 +30,42 @@ jobs:
       - name: Build E2E Docker image
         run: docker build -t playwright-tests ./e2e
 
-      - name: Register pre-E2E container memory usage
+      - name: Register initial container memory usage
         run: |
-          # Iterate over all running containers and store their initial memory usage (obtained using docker stats) into GITHUB_ENV variables of the form of CONTAINER_NAME_INITIAL_MEMORY_USAGE, and log the results
-          docker ps --format '{{.Names}}' | while read container; do
-            initial_memory=$(docker stats --no-stream --format '{{.MemUsage}}' $container | awk -F '/' '{print $1}')
-            echo "${container^^}_INITIAL_MEMORY_USAGE=$initial_memory" >> $GITHUB_ENV
+          declare -A initial_mem_usage
+
+          for container in express-app react-app; do
+            mem_usage=$(docker stats --no-stream --format "{{.MemUsage}}" $container)
+            initial_mem_usage[$container]=$(echo $mem_usage | awk '{print $1}')
           done
+          echo "INITIAL_MEM_USAGE=$(declare -p initial_mem_usage)" >> $GITHUB_ENV
 
       # Execute the E2E tests
       - name: Run E2E tests against local environment
         run: docker run -v $(pwd)/e2e-report:/app/e2e-report --name playwright-tests --network=host playwright-tests yarn e2etest:ci
 
-      - name: Register post-E2E container memory usage
+      - name: Check container memory usage after tests
         run: |
-          # Iterate over all running containers and store their final memory usage (obtained using docker stats) into GITHUB_ENV variables of the form of CONTAINER_NAME_FINAL_MEMORY_USAGE, and log the results
-          docker ps --format '{{.Names}}' | while read container; do
-            final_memory=$(docker stats --no-stream --format '{{.MemUsage}}' $container | awk -F '/' '{print $1}')
-            echo "${container^^}_FINAL_MEMORY_USAGE=$final_memory" >> $GITHUB_ENV
-          done
+          declare -A final_mem_usage
+          increased_mem_containers=""
 
-      - name: Check for memory leaks
-        run: |
-          # Iterate over all running containers and check whether their final memory usage is ${{env.MEMORY_LEAK_PERCENTAGE_THRESHOLD}} greater than their initial memory usage, and log the results, and fail if threshold exceeded
-          docker ps --format '{{.Names}}' | while read container; do
-            initial_memory=$(echo ${{env.${container^^}_INITIAL_MEMORY_USAGE}} | awk -F '.' '{print $1}' | sed 's/[A-Za-z]*//g')
-            final_memory=$(echo ${{env.${container^^}_FINAL_MEMORY_USAGE}} | awk -F '.' '{print $1}' | sed 's/[A-Za-z]*//g')
-            memory_leak_percentage=$(( (final_memory - initial_memory) * 100 / initial_memory ))
-            if [[ $memory_leak_percentage -gt ${{env.MEMORY_LEAK_PERCENTAGE_THRESHOLD}} ]]; then
-              echo "Memory leak detected in $container: memory usage increased by $memory_leak_percentage%."
-              exit 1
-            else
-              echo "No memory leak detected in $container."
+          for container in express-app react-app; do
+            mem_usage=$(docker stats --no-stream --format "{{.MemUsage}}" $container)
+            final_mem_usage[$container]=$(echo $mem_usage | awk '{print $1}')
+
+            initial=${initial_mem_usage[$container]}
+            final=${final_mem_usage[$container]}
+
+            increase=$(echo "$final * 100 / $initial" | bc -l)
+            if (( $(echo "$increase > 150" | bc -l) )); then
+              increased_mem_containers+="$container "
             fi
           done
-        env:
-          MEMORY_LEAK_PERCENTAGE_THRESHOLD: 50
+
+          if [[ -n $increased_mem_containers ]]; then
+            echo "Memory usage of these containers increased by more than 50%: $increased_mem_containers"
+            exit 1
+          fi
 
       # Prepare the logs for all containers.
       - name: Prepare container logs
@@ -93,4 +93,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: E2E Test Report
-          path: e2e-report
+          path: e2e/e2e-report
