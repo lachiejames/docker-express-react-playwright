@@ -12,13 +12,13 @@ async function formatMemoryUsage(rawUsage: string): Promise<number> {
 async function checkForMemoryLeaks(
   container: string,
   initialMemUsage: string,
-  finalMemUsage: string
+  finalMemUsage: string,
 ): Promise<void> {
   const formattedInitialMemUsageMB = await formatMemoryUsage(initialMemUsage);
   const formattedFinalMemUsageMB = await formatMemoryUsage(finalMemUsage);
 
   console.log(
-    `Checking for memory leaks in '${container}' container with memory usage increase threshold of ${MEMORY_LEAK_PERCENTAGE_THRESHOLD}%`
+    `Checking for memory leaks in '${container}' container with memory usage increase threshold of ${MEMORY_LEAK_PERCENTAGE_THRESHOLD}%`,
   );
 
   console.log(container);
@@ -31,17 +31,17 @@ async function checkForMemoryLeaks(
     (memoryUsageIncreaseMB / formattedInitialMemUsageMB) * 100;
 
   console.log(
-    `Memory usage increased by ${memoryUsageIncreasePercentage}% for '${container}' container`
+    `Memory usage increased by ${memoryUsageIncreasePercentage}% for '${container}' container`,
   );
 
   if (memoryUsageIncreasePercentage > MEMORY_LEAK_PERCENTAGE_THRESHOLD) {
     console.error(
-      `Possible memory leak detected in '${container}' container, aborting process!\n\n`
+      `Possible memory leak detected in '${container}' container, aborting process!\n\n`,
     );
     process.abort();
   } else {
     console.log(
-      `No memory leak detected in '${container}' container, continuing\n\n`
+      `No memory leak detected in '${container}' container, continuing\n\n`,
     );
   }
 }
