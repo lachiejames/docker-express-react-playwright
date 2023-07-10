@@ -41,8 +41,12 @@ jobs:
 
       - name: Register pre-E2E container memory usage
         run: |
-          for CONTAINER_NAME in ${{ env.CONTAINER_NAMES }}; do
-            echo "${CONTAINER_NAME}_INITIAL_MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER_NAME)" >> $GITHUB_ENV
+          for CONTAINER_NAME in "${CONTAINER_NAMES[@]}"; do
+            MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER_NAME)
+            echo "Pre-E2E memory usage for $CONTAINER_NAME: $MEMORY_USAGE"
+
+            # Store the initial memory usage of each container as an environment variable.
+            echo "${CONTAINER_NAME}_INITIAL_MEMORY_USAGE=$MEMORY_USAGE" >> $GITHUB_ENV
           done
 
       # Execute the E2E tests
@@ -52,15 +56,19 @@ jobs:
       - name: Register post-E2E container memory usage
         run: |
           for CONTAINER_NAME in "${CONTAINER_NAMES[@]}"; do
-            echo "${CONTAINER_NAME}_FINAL_MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER_NAME)" >> $GITHUB_ENV
+            MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER_NAME)
+            echo "Post-E2E memory usage for $CONTAINER_NAME: $MEMORY_USAGE"
+
+            # Store the final memory usage of each container as an environment variable.
+            echo "${CONTAINER_NAME}_FINAL_MEMORY_USAGE=$MEMORY_USAGE" >> $GITHUB_ENV
           done
 
       - name: Check for memory leaks
         run: |
           for CONTAINER_NAME in "${CONTAINER_NAMES[@]}"; do
-            INITIAL_MEM_USAGE=$(echo "${CONTAINER_NAME}_INITIAL_MEMORY_USAGE" | tr -d '[:space:]')
-            FINAL_MEM_USAGE=$(echo "${CONTAINER_NAME}_FINAL_MEMORY_USAGE" | tr -d '[:space:]')
-            ts-node ./scripts/checkForMemoryLeaks.ts $CONTAINER_NAME $INITIAL_MEM_USAGE $FINAL_MEM_USAGE
+            INITIAL_MEM_USAGE="${CONTAINER_NAME}_INITIAL_MEMORY_USAGE"
+            FINAL_MEM_USAGE="${CONTAINER_NAME}_FINAL_MEMORY_USAGE"
+            ts-node ./scripts/checkForMemoryLeaks.ts $CONTAINER_NAME ${!INITIAL_MEM_USAGE} ${!FINAL_MEM_USAGE}
           done
 
       # Prepare the logs for all containers.
