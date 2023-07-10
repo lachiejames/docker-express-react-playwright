@@ -39,14 +39,13 @@ jobs:
         run: npm install -g ts-node
 
       - name: Register pre-E2E container memory usage
-        id: initial_memory_usage
         run: |
-          for CONTAINER in ${{ env.CONTAINERS_TO_MEM_CHECK }}; do
+          for CONTAINER in "${CONTAINERS_TO_MEM_CHECK[@]}"; do
             MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER)
             echo "Pre-E2E memory usage for $CONTAINER: $MEMORY_USAGE"
 
-            # Store the initial memory usage of each container as an output variable.
-            echo "::set-output name=${CONTAINER}::$MEMORY_USAGE"
+            # Store the initial memory usage of each container as an environment variable.
+            echo "${CONTAINER}_INITIAL_MEMORY_USAGE=$MEMORY_USAGE" >> $GITHUB_ENV
           done
 
       # Execute the E2E tests
@@ -54,24 +53,23 @@ jobs:
         run: docker run -v $(pwd)/e2e-report:/app/e2e-report --name playwright_tests --network=host playwright_tests yarn e2etest:ci
 
       - name: Register post-E2E container memory usage
-        id: final_memory_usage
         run: |
-          for CONTAINER in ${{ env.CONTAINERS_TO_MEM_CHECK }}; do
+          for CONTAINER in "${CONTAINERS_TO_MEM_CHECK[@]}"; do
             MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER)
             echo "Post-E2E memory usage for $CONTAINER: $MEMORY_USAGE"
 
-            # Store the final memory usage of each container as an output variable.
-            echo "::set-output name=${CONTAINER}::$MEMORY_USAGE"
+            # Store the final memory usage of each container as an environment variable.
+            echo "${CONTAINER}_FINAL_MEMORY_USAGE=$MEMORY_USAGE" >> $GITHUB_ENV
           done
 
       - name: Check for memory leaks
         run: |
-          for CONTAINER in ${{ env.CONTAINERS_TO_MEM_CHECK }}; do
-            INITIAL_MEM_USAGE="${{ steps.initial_memory_usage.outputs[$CONTAINER] }}"
-            FINAL_MEM_USAGE="${{ steps.final_memory_usage.outputs[$CONTAINER] }}"
+          for CONTAINER in "${CONTAINERS_TO_MEM_CHECK[@]}"; do
+            INITIAL_MEM_USAGE="${CONTAINER}_INITIAL_MEMORY_USAGE"
+            FINAL_MEM_USAGE="${CONTAINER}_FINAL_MEMORY_USAGE"
 
             # Use the checkForMemoryLeaks script to check for memory leaks in each container.
-            ts-node ./scripts/checkForMemoryLeaks.ts $CONTAINER $INITIAL_MEM_USAGE $FINAL_MEM_USAGE
+            ts-node ./scripts/checkForMemoryLeaks.ts $CONTAINER ${!INITIAL_MEM_USAGE} ${!FINAL_MEM_USAGE}
           done
 
       # Prepare the logs for all containers.
