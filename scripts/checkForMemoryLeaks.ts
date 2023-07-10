@@ -1,9 +1,9 @@
 const MEMORY_LEAK_PERCENTAGE_THRESHOLD = 50;
 
-// If input is '12.34MiB / 7.667GiB', then return 12.34
-// If input is '1.234GiB / 7.667GiB', then return 1263.616 (GB value in MB)
-async function formatMemoryUsage(rawUsageVsTotal: string): Promise<number> {
-  const rawUsage = rawUsageVsTotal.split(" ")?.[0];
+// If input is '12.34MiB', then return 12.34
+// If input is '1.234GiB', then return 1263.616 (GB value in MB)
+async function formatMemoryUsage(rawUsage: string): Promise<number> {
+  // Remove non-numeric characters from memory usage string
   const containerMem: string | undefined = rawUsage.replace(/\D/g, "");
   const usage: number = parseFloat(containerMem);
   const isInGB: boolean = containerMem.includes("GiB");
