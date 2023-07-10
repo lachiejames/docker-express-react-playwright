@@ -7,9 +7,9 @@ const isCI = Boolean(process.env.CI);
 // Define the configuration for Playwright Test.
 const config: PlaywrightTestConfig = {
   // Execute the global setup script before any tests are run.
-  globalSetup: "./e2e/utils/globalSetup",
+  globalSetup: `${__dirname}/utils/globalSetup`,
   // Execute the global teardown script after all tests are run.
-  globalTeardown: "./e2e/utils/globalTeardown",
+  globalTeardown: `${__dirname}/utils/globalTeardown`,
   // In a CI environment, prevent test files or suites that are exclusively specified with ".only".
   forbidOnly: isCI,
   // In a CI environment, retry failed tests once. Otherwise, don't retry failed tests.
