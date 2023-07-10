@@ -1,7 +1,10 @@
 const MEMORY_LEAK_PERCENTAGE_THRESHOLD = 50;
 
-async function formatMemoryUsage(rawUsage: string): Promise<number> {
-  const containerMem: string | undefined = rawUsage.split(" ")?.[0];
+// If input is '12.34MiB / 7.667GiB', then return 12.34
+// If input is '1.234GiB / 7.667GiB', then return 1263.616 (GB value in MB)
+async function formatMemoryUsage(rawUsageVsTotal: string): Promise<number> {
+  const rawUsage = rawUsageVsTotal.split(" ")?.[0];
+  const containerMem: string | undefined = rawUsage.replace(/\D/g, "");
   const usage: number = parseFloat(containerMem);
   const isInGB: boolean = containerMem.includes("GiB");
 
@@ -11,30 +14,29 @@ async function formatMemoryUsage(rawUsage: string): Promise<number> {
 
 async function checkForMemoryLeaks(
   container: string,
-  initialMemUsage: string,
-  finalMemUsage: string,
+  rawInitialMemUsage: string,
+  rawFinalMemUsage: string,
 ): Promise<void> {
-  const formattedInitialMemUsageMB = await formatMemoryUsage(initialMemUsage);
-  const formattedFinalMemUsageMB = await formatMemoryUsage(finalMemUsage);
+  const initialMemUsageMB = await formatMemoryUsage(rawInitialMemUsage);
+  const finalMemUsageMB = await formatMemoryUsage(rawFinalMemUsage);
 
   console.log(
     `Checking for memory leaks in '${container}' container with memory usage increase threshold of ${MEMORY_LEAK_PERCENTAGE_THRESHOLD}%`,
   );
 
   console.log(container);
-  console.log(`Initial memory usage: ${formattedInitialMemUsageMB}MB`);
-  console.log(`Final memory usage: ${formattedFinalMemUsageMB}MB`);
+  console.log(`Initial memory usage: ${initialMemUsageMB}MB`);
+  console.log(`Final memory usage: ${finalMemUsageMB}MB`);
 
-  const memoryUsageIncreaseMB =
-    formattedFinalMemUsageMB - formattedInitialMemUsageMB;
-  const memoryUsageIncreasePercentage =
-    (memoryUsageIncreaseMB / formattedInitialMemUsageMB) * 100;
+  const memoryUsageIncreaseMB = finalMemUsageMB - initialMemUsageMB;
+  const increasePercentage = (memoryUsageIncreaseMB / initialMemUsageMB) * 100;
+  const increasePercentageRounded = increasePercentage.toFixed(2);
 
   console.log(
-    `Memory usage increased by ${memoryUsageIncreasePercentage}% for '${container}' container`,
+    `Memory usage increased by ${increasePercentageRounded}% for '${container}' container`,
   );
 
-  if (memoryUsageIncreasePercentage > MEMORY_LEAK_PERCENTAGE_THRESHOLD) {
+  if (increasePercentage > MEMORY_LEAK_PERCENTAGE_THRESHOLD) {
     console.error(
       `Possible memory leak detected in '${container}' container, aborting process!\n\n`,
     );
