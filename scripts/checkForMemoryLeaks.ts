@@ -18,11 +18,12 @@ async function checkForMemoryLeaks(
   const formattedFinalMemUsageMB = await formatMemoryUsage(finalMemUsage);
 
   console.log(
-    `${container}\n` +
-      `Initial memory usage: ${formattedInitialMemUsageMB}MB\n` +
-      `Final memory usage: ${formattedFinalMemUsageMB}MB\n` +
-      `Memory usage increase threshold: ${MEMORY_LEAK_PERCENTAGE_THRESHOLD}%\n\n\n`
+    `Checking for memory leaks in '${container}' container with memory usage increase threshold of ${MEMORY_LEAK_PERCENTAGE_THRESHOLD}%`
   );
+
+  console.log(container);
+  console.log(`Initial memory usage: ${formattedInitialMemUsageMB}MB`);
+  console.log(`Final memory usage: ${formattedFinalMemUsageMB}MB`);
 
   const memoryUsageIncreaseMB =
     formattedFinalMemUsageMB - formattedInitialMemUsageMB;
@@ -30,7 +31,7 @@ async function checkForMemoryLeaks(
     (memoryUsageIncreaseMB / formattedInitialMemUsageMB) * 100;
 
   console.log(
-    `Memory usage increased by ${memoryUsageIncreasePercentage}% for '${container}' container\n`
+    `Memory usage increased by ${memoryUsageIncreasePercentage}% for '${container}' container`
   );
 
   if (memoryUsageIncreasePercentage > MEMORY_LEAK_PERCENTAGE_THRESHOLD) {
