@@ -35,8 +35,8 @@ jobs:
           # Install ts-node so that we can run the checkForMemoryLeaks script.
           npm install -g ts-node
 
-          # Get the names of all running containers, which will each be checked for memory leaks.
-          CONTAINER_NAMES=$(docker ps --format '{{.Names}}')
+          # Store the names of all running containers as a space-separated string, which will each be checked for memory leaks.
+          CONTAINER_NAMES=($(docker ps --format '{{.Names}}'))
           echo "CONTAINER_NAMES=$CONTAINER_NAMES" >> $GITHUB_ENV
 
       - name: Register pre-E2E container memory usage
@@ -51,13 +51,13 @@ jobs:
 
       - name: Register post-E2E container memory usage
         run: |
-          for CONTAINER_NAME in $CONTAINER_NAMES; do
+          for CONTAINER_NAME in "${CONTAINER_NAMES[@]}"; do
             echo "${CONTAINER_NAME}_FINAL_MEMORY_USAGE=$(docker stats --no-stream --format '{{.MemUsage}}' $CONTAINER_NAME)" >> $GITHUB_ENV
           done
 
       - name: Check for memory leaks
         run: |
-          for CONTAINER_NAME in $CONTAINER_NAMES; do
+          for CONTAINER_NAME in "${CONTAINER_NAMES[@]}"; do
             INITIAL_MEM_USAGE=$(echo "${CONTAINER_NAME}_INITIAL_MEMORY_USAGE" | tr -d '[:space:]')
             FINAL_MEM_USAGE=$(echo "${CONTAINER_NAME}_FINAL_MEMORY_USAGE" | tr -d '[:space:]')
             ts-node ./scripts/checkForMemoryLeaks.ts $CONTAINER_NAME $INITIAL_MEM_USAGE $FINAL_MEM_USAGE
