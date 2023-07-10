@@ -19,7 +19,7 @@ const queryMemoryUsage = async (container: string): Promise<number> => {
     `stats ${container} --no-stream --format '{{.MemUsage}}'`,
     {
       echo: false,
-    }
+    },
   );
 
   const containerAndTotalMem: string = containerMemoryUsage.raw;
@@ -33,7 +33,7 @@ const queryMemoryUsage = async (container: string): Promise<number> => {
 
 const calculateMemIncreasePercentage = (
   initialUsage: number,
-  finalUsage: number
+  finalUsage: number,
 ): number => ((finalUsage - initialUsage) / initialUsage) * 100;
 
 export const registerInitialMemUsage = async () => {
@@ -48,19 +48,19 @@ export const checkForMemoryLeaks = async (): Promise<void> => {
     const finalMemUsage = await queryMemoryUsage(container);
     const memIncrease = calculateMemIncreasePercentage(
       initialMemUsage,
-      finalMemUsage
+      finalMemUsage,
     );
     const formattedIncrease = memIncrease.toFixed(1);
 
     console.log(
-      `Memory usage for '${container}' container changed from ${initialMemUsage}MB to ${finalMemUsage}MB (${formattedIncrease}%)`
+      `Memory usage for '${container}' container changed from ${initialMemUsage}MB to ${finalMemUsage}MB (${formattedIncrease}%)`,
     );
 
     if (memIncrease > MEM_LEAK_THRESHOLD_PERCENTAGE) {
       // Throwing an error here does not cause test execution to fail due to a bug in PlayWright,
       // so instead we must log the error and then abort the process
       console.error(
-        `Memory leak detected in '${container}' container\n\n (ignore below lines)`
+        `Memory leak detected in '${container}' container\n\n (ignore below lines)`,
       );
       process.abort();
     }
