@@ -7,7 +7,7 @@ on:
   pull_request:
     branches: [main]
   # Allow running the workflow manually from the GitHub Actions tab.
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 # Define the jobs in this workflow.
 jobs:
